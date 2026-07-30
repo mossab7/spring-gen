@@ -80,17 +80,21 @@ public class GenerateDomain {
             String className
     ) throws IOException {
         String repositoryPackageName = packageName + ".repository";
+        String EntityPath = packageName + ".entity." + className;
         Path repositoryPath = domainPath.resolve("repository");
         Files.createDirectories(repositoryPath);
         String content = """
                 package %s;
                 
                 import org.springframework.data.jpa.repository.JpaRepository;
+
+                import %s;
                 
                 public interface %sRepository extends JpaRepository<%s, Long> {
                 }
                 """.formatted(
                 repositoryPackageName,
+                EntityPath,
                 className,
                 className
         );
