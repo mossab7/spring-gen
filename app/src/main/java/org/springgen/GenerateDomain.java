@@ -9,6 +9,9 @@ public class GenerateDomain {
 
     private void createService(Path domainPath, String packageName, String className)
             throws IOException {
+        String servicePackageName = packageName + ".service";
+        Path servicePath = domainPath.resolve("service");
+        Files.createDirectories(servicePath);
         String content = """
                 package %s;
                 
@@ -17,16 +20,19 @@ public class GenerateDomain {
                 @Service
                 public class %sService {
                 }
-                """.formatted(packageName, className);
+                """.formatted(servicePackageName, className);
 
         Files.writeString(
-                domainPath.resolve(className + "Service.java"),
+                servicePath.resolve(className + "Service.java"),
                 content
         );
     }
 
     private void createController(Path domainPath, String packageName, String className)
             throws IOException {
+        String controllerPackageName = packageName + ".controller";
+        Path controllerPath = domainPath.resolve("controller");
+        Files.createDirectories(controllerPath);
         String content = """
                 package %s;
                 
@@ -35,16 +41,19 @@ public class GenerateDomain {
                 @RestController
                 public class %sController {
                 }
-                """.formatted(packageName, className);
+                """.formatted(controllerPackageName, className);
 
         Files.writeString(
-                domainPath.resolve(className + "Controller.java"),
+                controllerPath.resolve(className + "Controller.java"),
                 content
         );
     }
 
     private void createEntity(Path domainPath, String packageName, String className)
             throws IOException {
+        String entityPackageName = packageName + ".entity";
+        Path entityPath = domainPath.resolve("entity");
+        Files.createDirectories(entityPath);
         String content = """
                 package %s;
                 
@@ -57,10 +66,10 @@ public class GenerateDomain {
                     @Id
                     private Long id;
                 }
-                """.formatted(packageName, className);
+                """.formatted(entityPackageName, className);
 
         Files.writeString(
-                domainPath.resolve(className + ".java"),
+                entityPath.resolve(className + ".java"),
                 content
         );
     }
@@ -70,6 +79,9 @@ public class GenerateDomain {
             String packageName,
             String className
     ) throws IOException {
+        String repositoryPackageName = packageName + ".repository";
+        Path repositoryPath = domainPath.resolve("repository");
+        Files.createDirectories(repositoryPath);
         String content = """
                 package %s;
                 
@@ -78,13 +90,12 @@ public class GenerateDomain {
                 public interface %sRepository extends JpaRepository<%s, Long> {
                 }
                 """.formatted(
-                packageName,
+                repositoryPackageName,
                 className,
                 className
         );
-
         Files.writeString(
-                domainPath.resolve(className + "Repository.java"),
+                repositoryPath.resolve(className + "Repository.java"),
                 content
         );
     }
@@ -99,12 +110,14 @@ public class GenerateDomain {
     }
 
     private String resolvePackageName(String domainName) {
-        String currentPackage = this.getClass().getPackageName();
-        if (currentPackage != null && !currentPackage.isBlank()) {
-            return currentPackage + "." + domainName.toLowerCase(Locale.ROOT);
-        }
-
-        return "org.example." + domainName.toLowerCase(Locale.ROOT);
+            String currentDir = System.getProperty("user.dir");
+            String packageName = currentDir.replace("\\", ".").replace("/", ".");
+            int srcIndex = packageName.indexOf("src.main.java.");
+            if (srcIndex != -1) {
+                packageName = packageName.substring(srcIndex + "src.main.java.".length());
+                return packageName + "." + domainName.toLowerCase(Locale.ROOT);
+            }
+            return  "package.name." + domainName.toLowerCase(Locale.ROOT);
     }
 
     public void generateDomain(String domainName) {
